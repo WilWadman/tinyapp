@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieparser = require("cookie-parser")
 const app = express();
 const PORT = 8080; // default port 8080
 function generateRandomString() {
@@ -11,13 +12,17 @@ function generateRandomString() {
   return result;
 }
 app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieparser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.use(express.urlencoded({ extended: true }));
+
+
+
 
 app.post("/urls", (req, res) => {
   console.log(req.body.longURL); // Log the POST request body to the console
@@ -29,30 +34,42 @@ app.post("/urls", (req, res) => {
   const id = generateRandomString();
   urlDatabase[id] = longURL;
   console.log(urlDatabase);
-  res.redirect(`/urls/${id}`)
+  res.redirect(`/urls/${id}`);
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  console.log("Console log of params id", req.params.id)
+  console.log("Console log of params id", req.params.id);
   res.redirect(longURL);
 });
 
-app.post("/urls/:id/delete", (req, res) =>{
+app.post("/urls/:id/delete", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  delete urlDatabase[req.params.id]
-  delete urlDatabase[longURL]
-  res.redirect('/urls')
-} )
+  delete urlDatabase[req.params.id];
+  delete urlDatabase[longURL];
+  res.redirect('/urls');
+});
 
-app.post("/urls/:id", (req, res) =>{
- // need to access the existing id
- // then need to update the existing id with the newly inputted updatedURL
- urlDatabase[req.params.id] = req.body.updatedURL
- console.log(req.params)
- console.log(req.body)
+app.post('/login', (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+
+  res.clearCookie('username')
   res.redirect('/urls')
 })
+
+
+app.post("/urls/:id", (req, res) => {
+  // need to access the existing id
+  // then need to update the existing id with the newly inputted updatedURL
+  urlDatabase[req.params.id] = req.body.updatedURL;
+  console.log(req.params);
+  console.log(req.body);
+  res.redirect('/urls');
+});
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -70,12 +87,18 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const username = req.cookies.username
+  const templateVars = { urls: urlDatabase , username};
+  console.log(username)
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const id = req.params.id
+  const longURL = urlDatabase[req.params.id]
+  const username = req.cookies.username
+  
+  const templateVars = { id, longURL, username };
   res.render("urls_show", templateVars);
 });
 
