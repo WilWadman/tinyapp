@@ -38,6 +38,13 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/urls/:id/delete", (req, res) =>{
+  const longURL = urlDatabase[req.params.id];
+  delete urlDatabase[req.params.id]
+  delete urlDatabase[longURL]
+  res.redirect('/urls')
+} )
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
