@@ -83,7 +83,9 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const username = req.cookies.username
+  const templateVars = {  username }
+  res.render("urls_new",templateVars);
 });
 
 app.get("/urls", (req, res) => {
