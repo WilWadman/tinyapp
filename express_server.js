@@ -45,6 +45,15 @@ app.post("/urls/:id/delete", (req, res) =>{
   res.redirect('/urls')
 } )
 
+app.post("/urls/:id", (req, res) =>{
+ // need to access the existing id
+ // then need to update the existing id with the newly inputted updatedURL
+ urlDatabase[req.params.id] = req.body.updatedURL
+ console.log(req.params)
+ console.log(req.body)
+  res.redirect('/urls')
+})
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
