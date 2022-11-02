@@ -52,20 +52,25 @@ const users = {
 /// GET LOGIN
 
 app.get("/login", (req, res) => {
-  email = req.body.email;
-  password = req.body.password;
-  // const username = req.cookies.user_id;
-
+  const email = req.body.email;
+  const password = req.body.password;
   const templateVars = { email, password, user: null };
-  res.render("login", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect('/urls');
+  } else {
 
+    res.render("login", templateVars);
+  }
 });
 
 /// POST TO URLS
 
 app.post("/urls", (req, res) => {
-  console.log(req.body.longURL); // Log the POST request body to the console
+  const user_id = req.cookies["user_id"]; // Log the POST request body to the console
   const { longURL } = req.body;
+  if (!req.cookies["user_id"]) {
+    return res.send('Please log in to shorten URLs');
+  }
   if (!longURL) {
     return res.status(400).send('Please enter a valid longURL');
   }
@@ -100,21 +105,27 @@ app.post("/register", (req, res) => {
 // Get Registration page
 
 app.get("/register", (req, res) => {
+  const email = req.body.email;
   const id = req.params.id;
   const longURL = urlDatabase[req.params.id];
-  // const username = req.cookies.user_id;
-
   const templateVars = { id, longURL, user: null };
-  res.render("reg_new", templateVars);
-
+  const user = getUserByEmail(email);
+  if (req.cookies["user_id"]) {
+    res.redirect('/urls');
+  } else {
+    res.render("reg_new", templateVars);
+  }
 });
 
 // GET ID 
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  console.log("Console log of params id", req.params.id);
-  res.redirect(longURL);
+if(longURL === undefined){
+  return res.send('This website doesnt exist');} 
+  else{
+
+  res.redirect(longURL);}
 });
 
 // POST DELETE REQUEST
@@ -136,9 +147,6 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   const user = getUserByEmail(email);
 
-
-
-  
   if (user === null) {
     return res.status(403).send('Cannot find this user account');
   }
@@ -147,6 +155,7 @@ app.post('/login', (req, res) => {
       return res.status(403).send('Incorrect Password Entered');
     }
     if (password === user.password) {
+
       res.cookie("user_id", user.id);
       res.redirect('/urls');
     }
@@ -188,7 +197,13 @@ app.get("/urls/new", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
   const templateVars = { user };
-  res.render("urls_new", templateVars);
+
+  if (!req.cookies["user_id"]) {
+    res.redirect('/login');
+  } else {
+    res.render("urls_new", templateVars);
+
+  }
 });
 
 // GET EXISTING URLS PAGE
@@ -196,7 +211,9 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.cookies["user_id"];
   const user = users[user_id];
-  const templateVars = { urls: urlDatabase, user };
+  console.log(user);
+  console.log(user_id);
+  const templateVars = { urls: urlDatabase, user: user };
 
   res.render("urls_index", templateVars);
 });
@@ -206,9 +223,10 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[req.params.id];
-  const user_id = req.cookies.req.cookies["user_id"];
+  const user_id = req.cookies["user_id"];
+  const user = users[user_id];
+  const templateVars = { id, longURL, user };
 
-  const templateVars = { id, longURL, user_id};
   res.render("urls_show", templateVars);
 });
 
