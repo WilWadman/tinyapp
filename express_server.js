@@ -48,6 +48,19 @@ const users = {
   },
 };
 
+
+/// GET LOGIN
+
+app.get("/login", (req, res) => {
+  email = req.body.email;
+  password = req.body.password;
+  // const username = req.cookies.user_id;
+
+  const templateVars = { email , password , user: null};
+  res.render("login", templateVars);
+
+});
+
 /// POST TO URLS
 
 app.post("/urls", (req, res) => {
@@ -125,7 +138,7 @@ app.post('/login', (req, res) => {
 
 app.post('/logout', (req, res) => {
 
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -152,8 +165,9 @@ app.listen(PORT, () => {
 // GET NEW URLS PAGE
 
 app.get("/urls/new", (req, res) => {
-  const username = req.cookies.username;
-  const templateVars = { username };
+  const user_id = req.cookies["user_id"];
+  const user = users[user_id];
+  const templateVars = { user };
   res.render("urls_new", templateVars);
 });
 
