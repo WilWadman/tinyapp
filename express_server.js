@@ -12,14 +12,14 @@ function generateRandomString() {
   return result;
 }
 
-function isAlreadyUser(emailReg) {
-  for ( user in users ){
-   
+function getUserByEmail(emailReg) {
+  for (user in users) {
+
     if (emailReg === users[user].email) {
-      
-      return users.user;
+
+      return users[user];
     }
-  } 
+  }
   return null;
 }
 
@@ -56,7 +56,7 @@ app.get("/login", (req, res) => {
   password = req.body.password;
   // const username = req.cookies.user_id;
 
-  const templateVars = { email , password , user: null};
+  const templateVars = { email, password, user: null };
   res.render("login", templateVars);
 
 });
@@ -80,13 +80,13 @@ app.post("/urls", (req, res) => {
 // POST Registration handler
 app.post("/register", (req, res) => {
   const id = generateRandomString();
-  email = req.body.email;
-  password = req.body.password;
+  const email = req.body.email;
+  const password = req.body.password;
   if (!email || !password) {
     return res.status(400).send('Username/Password cannot be empty');
   }
- 
-  if (isAlreadyUser(email) !== null) {
+
+  if (getUserByEmail(email) !== null) {
     return res.status(400).send('This email is already registered');
   }
 
@@ -130,16 +130,36 @@ app.post("/urls/:id/delete", (req, res) => {
 // POST LOGIN NAME
 
 app.post('/login', (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect('/urls');
-});
 
+
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = getUserByEmail(email);
+
+
+
+  
+  if (user === null) {
+    return res.status(403).send('Cannot find this user account');
+  }
+  if (user !== null) {
+    if (password !== user.password) {
+      return res.status(403).send('Incorrect Password Entered');
+    }
+    if (password === user.password) {
+      res.cookie("user_id", user.id);
+      res.redirect('/urls');
+    }
+  }
+}
+
+);
 // POST CLEAR USERNAME
 
 app.post('/logout', (req, res) => {
 
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 //POST ADD NEW URL
@@ -186,9 +206,9 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[req.params.id];
-  const username = req.cookies.username;
+  const user_id = req.cookies.req.cookies["user_id"];
 
-  const templateVars = { id, longURL, username };
+  const templateVars = { id, longURL, user_id};
   res.render("urls_show", templateVars);
 });
 
