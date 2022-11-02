@@ -11,6 +11,18 @@ function generateRandomString() {
   }
   return result;
 }
+
+function isAlreadyUser(emailReg) {
+  for ( user in users ){
+   
+    if (emailReg === users[user].email) {
+      
+      return users.user;
+    }
+  } 
+  return null;
+}
+
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieparser());
@@ -57,10 +69,16 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   email = req.body.email;
   password = req.body.password;
-  
-users[id] = { id, email, password };
+  if (!email || !password) {
+    return res.status(400).send('Username/Password cannot be empty');
+  }
  
-  res.cookie("user_id", id)
+  if (isAlreadyUser(email) !== null) {
+    return res.status(400).send('This email is already registered');
+  }
+
+  users[id] = { id, email, password };
+  res.cookie("user_id", id);
   res.redirect('/urls');
 
 });
@@ -73,9 +91,9 @@ app.get("/register", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   // const username = req.cookies.user_id;
 
-  const templateVars = { id, longURL, user:null };
+  const templateVars = { id, longURL, user: null };
   res.render("reg_new", templateVars);
-  
+
 });
 
 // GET ID 
@@ -143,7 +161,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user_id = req.cookies["user_id"];
-  const user = users[user_id]
+  const user = users[user_id];
   const templateVars = { urls: urlDatabase, user };
 
   res.render("urls_index", templateVars);
