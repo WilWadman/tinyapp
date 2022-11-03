@@ -1,7 +1,12 @@
 const express = require("express");
 const cookieparser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
+
 const app = express();
 const PORT = 8080; // default port 8080
+
+
+
 const generateRandomString = () => {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -24,14 +29,13 @@ const getUserByEmail = (emailReg) => {
 
 const urlsForUser = (id) => {
 
-  console.log(id);
-  console.log(urlDatabase);
+ 
 
   for (const urlId in urlDatabase) {
     if (urlDatabase[urlId].userID === id) {
       const match = {};
       match[urlId] = urlDatabase[urlId].longURL;
-      console.log("matchingURLS", match);
+      
       return match;
     }
   }
@@ -107,7 +111,8 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  if (!email || !password) {
+  const hashedPassword = bcrypt.hashSync(password, 10)
+  if (!email || !hashedPassword) {
     return res.status(400).send('Username/Password cannot be empty');
   }
 
@@ -115,7 +120,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send('This email is already registered');
   }
 
-  users[id] = { id, email, password };
+  users[id] = { id, email, hashedPassword };
   res.cookie("user_id", id);
   res.redirect('/urls');
 
@@ -184,24 +189,24 @@ app.post('/login', (req, res) => {
 
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const user = getUserByEmail(email);
 
   if (user === null) {
     return res.status(403).send('Cannot find this user account');
   }
   if (user !== null) {
-    if (password !== user.password) {
-      return res.status(403).send('Incorrect Password Entered');
-    }
-    if (password === user.password) {
+   if (!bcrypt.compareSync( password , hashedPassword)){
+return res.status(403).send('Incorrect Password Entered');
+   } 
+      if(bcrypt.compareSync( password , hashedPassword)){
 
       res.cookie("user_id", user.id);
       res.redirect('/urls');
     }
   }
-}
+});
 
-);
 // POST CLEAR USERNAME
 
 app.post('/logout', (req, res) => {
