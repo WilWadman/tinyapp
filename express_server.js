@@ -53,7 +53,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  return res.redirect("/login");
+  const cookieUserID = req.session["user_id"];
+  if(cookieUserID){
+    return res.redirect("/urls")
+  }else {
+
+  return res.redirect("/login");}
 });
 
 // CRUD Operations
