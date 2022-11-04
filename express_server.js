@@ -53,7 +53,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  return res.redirect("/register");
+  return res.redirect("/login");
 });
 
 // CRUD Operations
