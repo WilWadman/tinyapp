@@ -138,6 +138,7 @@ app.post("/logout", (req, res) => {
 app.post("/urls", (req, res) => {
   const userId = req.session["user_id"];
   const { updatedURL } = req.body;
+  const id = generateRandomString();
 
   if (!req.session["user_id"]) {
     return res.send("Please log in to shorten URLs");
@@ -145,7 +146,7 @@ app.post("/urls", (req, res) => {
   if (!updatedURL) {
     return res.status(400).send("Please enter a valid longURL");
   } else {
-    urlDatabase[userId] = { longURL: updatedURL, userID: userId };
+    urlDatabase[id] = { longURL: updatedURL, userID: userId };
 
     return res.redirect(`/urls/`);
   }
@@ -160,6 +161,7 @@ app.post("/urls/:id", (req, res) => {
   const user_id = urlDatabase[req.params.id].userID;
   const user = users[cookieUserID];
   const templateVars = { id, longURL, user };
+  const { updatedURL } = req.body;
 
   if (!user_id) {
     return res.send("You must login to edit this URL");
@@ -171,6 +173,8 @@ app.post("/urls/:id", (req, res) => {
   if (cookieUserID !== user_id) {
     return res.send("You do not own this URL so you may not access it");
   } else {
+    urlDatabase[id].longURL = updatedURL;
+
     return res.redirect("/urls");
   }
 });

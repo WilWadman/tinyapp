@@ -19,7 +19,7 @@
           Short URL ID: <a href="/u/<%= id %>">
             <%= id %>
           </a>
-        <form method="POST" action="/urls/<%= id.longURL %>">
+        <form method="POST" action="/urls/<%= id %>">
           <label for="updatedURL">Edit your URL:</label>
           <input class="form-control" type="text" name="updatedURL" placeholder="http://"
             style="width: 50%; margin-left: 25%" />
